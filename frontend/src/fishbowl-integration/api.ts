@@ -15,3 +15,8 @@ export async function getInventory() {
   );
   console.log(response.data);
 }
+
+export async function seeTable() {
+  const response = await axios.get(`${BACKEND_BASE_URL}/api/fishbowl/seetable`);
+  console.log(response.data);
+}

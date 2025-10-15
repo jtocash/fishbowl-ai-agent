@@ -144,4 +144,46 @@ export class FishbowlService {
       throw error;
     }
   }
+
+  async seeTable() {
+    const token = await this.getToken();
+
+    if (!token) {
+      throw new Error("Failed to authenticate with Fishbowl");
+    }
+
+    try {
+      const response = await axios.get(
+        `${config.fishbowl.baseUrl}/data-query`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          timeout: 10000,
+          params: {
+            query: `SELECT 
+    part.num AS "Part Number",
+    trackingtext.info AS "Condition",
+    tag.qty AS "Qty"
+FROM tag
+LEFT JOIN part 
+    ON tag.partid = part.id
+LEFT JOIN trackingtext 
+    ON tag.id = trackingtext.tagid
+WHERE tag.typeid = 30 and trackingtext.info not like 'RWI%';
+`,
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Error fetching table:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }
 }
