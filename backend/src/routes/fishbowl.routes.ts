@@ -3,7 +3,7 @@ import { FishbowlService } from "../services/fishbowl.service";
 import { table } from "console";
 
 const router = Router();
-const fishbowlService = new FishbowlService();
+const fishbowlService = FishbowlService.getInstance();
 
 router.get("/inventory", async (req, res) => {
   console.log("Fetching inventory list");
@@ -47,7 +47,9 @@ router.get("/test-token", async (req, res) => {
 
 router.get("/seetable", async (req, res) => {
   try {
-    const table = await fishbowlService.seeTable();
+    const table = await fishbowlService.seeTable(
+      req.query.partNumber as string
+    );
     console.log("Table:", table);
     res.json({
       success: true,

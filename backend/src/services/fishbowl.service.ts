@@ -2,12 +2,23 @@ import axios from "axios";
 import { config } from "../config/environment";
 import fs from "fs/promises";
 import path from "path";
+import { InventoryTable } from "../types/fishbowl.types";
 
 const TOKEN_FILE_PATH = path.join(__dirname, "../../.fishbowl-token");
 
 export class FishbowlService {
+  private static instance: FishbowlService | null = null;
   private token: string | null = null;
   private tokenPromise: Promise<string | null> | null = null;
+
+  private constructor() {}
+
+  static getInstance(): FishbowlService {
+    if (!FishbowlService.instance) {
+      FishbowlService.instance = new FishbowlService();
+    }
+    return FishbowlService.instance;
+  }
 
   async getToken(): Promise<string | null> {
     if (this.token) {
@@ -145,7 +156,7 @@ export class FishbowlService {
     }
   }
 
-  async seeTable() {
+  async seeTable(partNumber: string): Promise<InventoryTable> {
     const token = await this.getToken();
 
     if (!token) {
@@ -171,7 +182,7 @@ LEFT JOIN part
     ON tag.partid = part.id
 LEFT JOIN trackingtext 
     ON tag.id = trackingtext.tagid
-WHERE tag.typeid = 30 and trackingtext.info not like 'RWI%';
+WHERE tag.typeid = 30 and trackingtext.info not like 'TX%' and part.num = '${partNumber}';
 `,
           },
         }

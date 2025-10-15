@@ -12,4 +12,7 @@ export const config = {
     appDescription: process.env.FISHBOWL_APP_DESCRIPTION,
     appId: process.env.FISHBOWL_APP_ID,
   },
+  OpenAI: {
+    apiKey: process.env.OPENAI_API_KEY,
+  },
 };
