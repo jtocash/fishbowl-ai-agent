@@ -2,14 +2,6 @@
 
 An AI agent that can access your Fishbowl inventory system and provide relevant information to customers. The frontend is currently for testing purposes only - a production frontend implementation will likely use ChatKit.
 
-## Features
-
-- 🤖 AI-powered chatbot using OpenAI
-- 📦 Direct integration with Fishbowl Inventory API
-- 🔒 Secure credential management
-- 🌐 RESTful API with Express backend
-- ⚛️ React TypeScript frontend
-
 ## Tech Stack
 
 **Backend:**
