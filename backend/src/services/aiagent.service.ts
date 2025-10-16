@@ -66,4 +66,6 @@ export const runWorkflow = async (workflow: WorkflowInput) => {
   const getPartNumberResult = {
     output_text: getPartNumberResultTemp.finalOutput ?? "",
   };
+
+  return getPartNumberResult;
 };
