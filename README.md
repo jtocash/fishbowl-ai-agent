@@ -20,7 +20,7 @@ An AI agent that can access your Fishbowl inventory system and provide relevant 
 ## Prerequisites
 
 - Node.js (v16 or higher)
-- npm or yarn
+- Node Package Manager
 - Fishbowl Inventory system with API access
 - OpenAI API key
 
