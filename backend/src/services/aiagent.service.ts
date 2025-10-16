@@ -15,10 +15,11 @@ const getTableByPartNumber = tool({
     return await fishbowlService.seeTable(input.part_number);
   },
 });
+
 const getPartNumber = new Agent({
   name: "Get part number",
   instructions:
-    "You are a helpful assistant.  Identify the part number from the message you are receiving and then find the stock for each condition of that inventory",
+    "You are a helpful assistant.  Identify the part number from the message you are receiving and then find the stock for each condition of that inventory by using the get_table_by_part_number tool ",
   model: "gpt-5-nano",
   tools: [getTableByPartNumber],
   modelSettings: {
@@ -32,7 +33,6 @@ const getPartNumber = new Agent({
 
 type WorkflowInput = { input_as_text: string };
 
-// Main code entrypoint
 export const runWorkflow = async (workflow: WorkflowInput) => {
   const state = {};
   const conversationHistory: AgentInputItem[] = [
@@ -56,7 +56,7 @@ export const runWorkflow = async (workflow: WorkflowInput) => {
     ...conversationHistory,
   ]);
   conversationHistory.push(
-    ...getPartNumberResultTemp.newItems.map((item: any) => item.rawItem)
+    ...getPartNumberResultTemp.newItems.map((item) => item.rawItem)
   );
 
   if (!getPartNumberResultTemp.finalOutput) {
@@ -67,5 +67,5 @@ export const runWorkflow = async (workflow: WorkflowInput) => {
     output_text: getPartNumberResultTemp.finalOutput ?? "",
   };
 
-  return getPartNumberResult;
+  return getPartNumberResultTemp.finalOutput;
 };
