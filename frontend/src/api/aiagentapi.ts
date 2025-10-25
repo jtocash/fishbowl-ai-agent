@@ -6,7 +6,7 @@ export async function callAgent(input: string) {
     const response = await axios.post(`${BACKEND_BASE_URL}/api/agent/input`, {
       input: input,
     });
-    console.log(response.data.agentResponse.output_text);
+    console.log(response.data.agentResponse);
     return response.data;
   } catch (error) {
     console.log(error);

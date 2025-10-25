@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { FishbowlService } from "../services/fishbowl.service";
 import { runWorkflow } from "../services/aiagent.service";
 
 const router = Router();

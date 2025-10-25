@@ -4,6 +4,7 @@ import { config } from "./config/environment";
 import healthRoutes from "./routes/health.routes";
 import fishbowlRoutes from "./routes/fishbowl.routes";
 import aiAgentRoutes from "./routes/aiagent.routes";
+import msGraphRoutes from "./routes/msgraph.routes";
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use("/api", healthRoutes);
 app.use("/api/fishbowl", fishbowlRoutes);
 app.use("/api/agent", aiAgentRoutes);
+app.use("/api/msgraph", msGraphRoutes);
 
 app.listen(config.port, () =>
   console.log(`✅ Server running on port ${config.port}`)

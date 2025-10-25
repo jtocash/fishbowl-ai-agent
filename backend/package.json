@@ -18,6 +18,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@azure/identity": "^4.13.0",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
     "@openai/agents": "^0.1.9",
     "axios": "^1.6.0",
     "cors": "^2.8.5",
