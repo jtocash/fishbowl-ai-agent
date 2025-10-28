@@ -7,7 +7,7 @@ export async function getMail() {
     console.log(response);
     return response;
   } catch (error: any) {
-    console.log(`Error: ${error.message}: ${error.response?.data?.error}`);
-    throw Error;
+    console.log(`Error: ${error.message}: ${error.response?.data}`);
+    throw error;
   }
 }

@@ -44,7 +44,7 @@ Create a `.env` file in the `backend` directory:
 
 ```env
 PORT=5001
-FISHBOWL_BASE_URL=your_fishbowl_url (including /api)
+FISHBOWL_BASE_URL=your_fishbowl_url (with /api at the end)
 FISHBOWL_USERNAME=your_fishbowl_username
 FISHBOWL_PASSWORD=your_fishbowl_password
 FISHBOWL_APP_NAME=FishbowlAIAgent

@@ -1,0 +1,4 @@
+
+2. choose part numbers from ambiguous part number like 5hb11a
+3. go from internal condition to simple "new, used" etc
+4. if unsure, email a higher up.
