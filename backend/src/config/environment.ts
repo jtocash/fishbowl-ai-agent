@@ -1,3 +1,4 @@
+import { webSearchTool } from "@openai/agents";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -14,6 +15,8 @@ const requiredEnvVars = [
   "GRAPH_USER_EMAIL",
   "GRAPH_TENANT_ID",
   "GRAPH_CLIENT_ID",
+  "PRODUCTION_URL",
+  "WEBHOOK_CLIENT_STATE_SECRETPHRASE"
 ] as const;
 
 const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
@@ -43,4 +46,12 @@ export const config = {
     tenantId: process.env.GRAPH_TENANT_ID!,
     clientId: process.env.GRAPH_CLIENT_ID!,
   },
+  webhooks: 
+  {
+    baseUrl: process.env.NODE_ENV !== 'production' 
+    ? process.env.NGROK_TUNNEL! 
+    : process.env.PRODUCTION_URL!, // your actual server URL
+    clientState: process.env.WEBHOOK_CLIENT_STATE_SECRETPHRASE!
+  }
+ 
 };

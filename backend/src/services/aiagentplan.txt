@@ -1,0 +1,2 @@
+let agent see whole email thread
+strip out html tags

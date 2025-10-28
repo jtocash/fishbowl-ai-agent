@@ -33,19 +33,14 @@ const getPartNumber = new Agent({
 
 type WorkflowInput = { input_as_text: string };
 
-export const runWorkflow = async (workflow: WorkflowInput) => {
-  const state = {};
+export const runAgent = async (workflow: WorkflowInput) => {
   const conversationHistory: AgentInputItem[] = [
     {
-      role: "user",
-      content: [
-        {
-          type: "input_text",
-          text: workflow.input_as_text,
-        },
-      ],
+      role: "system",
+      content: workflow.input_as_text,
     },
   ];
+
   const runner = new Runner({
     traceMetadata: {
       __trace_source__: "agent-builder",
