@@ -22,6 +22,7 @@ const requiredEnvVars = [
   "GRAPH_CLIENT_ID",
   "PRODUCTION_URL",
   "WEBHOOK_CLIENT_STATE_SECRETPHRASE",
+  "NODE_ENV",
 
   ...(process.env.NODE_ENV !== "production" ? ["PEM_B64"] : []),
 ];

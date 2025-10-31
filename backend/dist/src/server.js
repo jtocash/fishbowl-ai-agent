@@ -23,14 +23,16 @@ app.use("/api/msgraph", msgraph_routes_1.default);
 // Initialize webhook subscriptions
 async function initializeWebhooks() {
     try {
+        console.log("Clearing webhook subscriptions...");
+        await msgraph_service_1.msGraphService.clearSubscriptions();
         console.log("Creating webhook subscriptions...");
-        await (0, msgraph_service_1.createSubscription)();
+        await msgraph_service_1.msGraphService.createSubscription();
         console.log("Webhook subscriptions initialized");
         // Renew subscriptions every 24 hours
         setInterval(async () => {
             try {
                 console.log("Renewing webhook subscriptions...");
-                await (0, msgraph_service_1.renewSubscriptions)();
+                await msgraph_service_1.msGraphService.renewSubscriptions();
                 console.log("Subscriptions renewed");
             }
             catch (error) {

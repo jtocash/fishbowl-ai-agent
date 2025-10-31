@@ -1,7 +1,8 @@
 import { Router } from "express";
-import { getMail, graphClient } from "../services/msgraph.service";
+import { msGraphService } from "../services/msgraph.service";
 import { runEmailPipeline } from "../pipelines/emailpipeline";
 import { config } from "../config/environment";
+import { ref } from "process";
 
 const router = Router();
 
@@ -9,7 +10,7 @@ const userEmail = config.graph.userEmail;
 
 router.get("/getmail", async (req, res) => {
   try {
-    const response = await getMail();
+    const response = await msGraphService.getMail();
     res.json(response);
   } catch (err: any) {
     console.error("Microsoft Graph error:", err.response?.data || err);
@@ -24,6 +25,16 @@ router.get("/getmail", async (req, res) => {
         statusCode: err.statusCode,
       },
     });
+  }
+});
+
+router.delete("/webhook/refresh", async (req, res) => {
+  try {
+    const response = await msGraphService.refreshSubscription();
+    res.json(response);
+  } catch (err: any) {
+    console.error("Webhook refresh error:", err);
+    res.status(500).json({ error: `Failed to refresh ${err}` });
   }
 });
 
@@ -47,9 +58,9 @@ router.all("/webhook", async (req, res) => {
 
     if (value && value.length > 0) {
       const messageId = value[0].resource?.split("/Messages/")[1];
-
+      const client = await msGraphService.getClient();
       if (messageId) {
-        graphClient
+        client
           .api(`/users/${userEmail}/messages/${messageId}`)
           .select("from")
           .get()

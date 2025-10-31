@@ -5,7 +5,7 @@ const aiagent_service_1 = require("../services/aiagent.service");
 const msgraph_service_1 = require("../services/msgraph.service");
 async function runEmailPipeline(messageId) {
     try {
-        const messageobj = await (0, msgraph_service_1.getEmailConversation)(messageId);
+        const messageobj = await msgraph_service_1.msGraphService.getEmailConversation(messageId);
         // Get the actual latest message ID from the conversation
         const latestMessage = messageobj[messageobj.length - 1];
         let agentinput = "";
@@ -19,7 +19,7 @@ async function runEmailPipeline(messageId) {
         }
         const agentResponse = await (0, aiagent_service_1.runWorkflow)({ input_as_text: agentinput });
         // Use the latest message's actual ID instead of the webhook notification ID
-        (0, msgraph_service_1.replyToEmail)(latestMessage.id, agentResponse);
+        msgraph_service_1.msGraphService.replyToEmail(latestMessage.id, agentResponse);
     }
     catch (error) {
         console.log(`Error running the email pipeline: ${error.message}`);

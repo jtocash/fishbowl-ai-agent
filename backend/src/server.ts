@@ -5,10 +5,7 @@ import healthRoutes from "./routes/health.routes";
 import fishbowlRoutes from "./routes/fishbowl.routes";
 import aiAgentRoutes from "./routes/aiagent.routes";
 import msGraphRoutes from "./routes/msgraph.routes";
-import {
-  createSubscription,
-  renewSubscriptions,
-} from "./services/msgraph.service";
+import { msGraphService } from "./services/msgraph.service";
 
 const app = express();
 
@@ -25,8 +22,10 @@ app.use("/api/msgraph", msGraphRoutes);
 // Initialize webhook subscriptions
 async function initializeWebhooks() {
   try {
+    console.log("Clearing webhook subscriptions...");
+    await msGraphService.clearSubscriptions();
     console.log("Creating webhook subscriptions...");
-    await createSubscription();
+    await msGraphService.createSubscription();
     console.log("Webhook subscriptions initialized");
 
     // Renew subscriptions every 24 hours
@@ -34,7 +33,7 @@ async function initializeWebhooks() {
       async () => {
         try {
           console.log("Renewing webhook subscriptions...");
-          await renewSubscriptions();
+          await msGraphService.renewSubscriptions();
           console.log("Subscriptions renewed");
         } catch (error: any) {
           console.error("Failed to renew subscriptions:", error.message);

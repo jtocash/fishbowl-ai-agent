@@ -8,7 +8,7 @@ const router = (0, express_1.Router)();
 const userEmail = environment_1.config.graph.userEmail;
 router.get("/getmail", async (req, res) => {
     try {
-        const response = await (0, msgraph_service_1.getMail)();
+        const response = await msgraph_service_1.msGraphService.getMail();
         res.json(response);
     }
     catch (err) {
@@ -22,6 +22,16 @@ router.get("/getmail", async (req, res) => {
                 statusCode: err.statusCode,
             },
         });
+    }
+});
+router.delete("/webhook/refresh", async (req, res) => {
+    try {
+        const response = await msgraph_service_1.msGraphService.refreshSubscription();
+        res.json(response);
+    }
+    catch (err) {
+        console.error("Webhook refresh error:", err);
+        res.status(500).json({ error: `Failed to refresh ${err}` });
     }
 });
 router.all("/webhook", async (req, res) => {
@@ -41,8 +51,9 @@ router.all("/webhook", async (req, res) => {
         res.status(202).json({ message: "Notification received" });
         if (value && value.length > 0) {
             const messageId = value[0].resource?.split("/Messages/")[1];
+            const client = await msgraph_service_1.msGraphService.getClient();
             if (messageId) {
-                msgraph_service_1.graphClient
+                client
                     .api(`/users/${userEmail}/messages/${messageId}`)
                     .select("from")
                     .get()
