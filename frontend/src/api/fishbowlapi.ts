@@ -23,3 +23,10 @@ export async function seeTable(part: string) {
   );
   console.log(response.data);
 }
+
+export async function seeActivePartNums() {
+  const response = await axios.get(
+    `${BACKEND_BASE_URL}/api/fishbowl/activeparts`
+  );
+  console.log(response.data);
+}

@@ -3,24 +3,68 @@ import { Client } from "@microsoft/microsoft-graph-client";
 import { config } from "../config/environment";
 import path from "path";
 import { Email } from "../types/msgraph.types";
-import { AxiosError } from "axios";
+import { convert } from "html-to-text";
+import {
+  SecretsManagerClient,
+  GetSecretValueCommand,
+} from "@aws-sdk/client-secrets-manager";
 
-const tenantId = config.graph.tenantId; // e.g. "12345678-abcd-efgh-1234-56789abcdef0"
-const clientId = config.graph.clientId; // from Azure App Registration
-// Must be a PEM file with both certificate and private key,
-// this can be generated from a pfx file.
-const certificatePath = path.join(process.cwd(), "graphcertificate.pem");
+const tenantId = config.graph.tenantId;
+const clientId = config.graph.clientId;
+const certificatePassword = config.graph.certificatePassword;
+const userEmail = config.graph.userEmail;
 
-const certificatePassword = config.graph.certificatePassword; // the export password
-const userEmail = config.graph.userEmail; // mailbox or user to act as
+let certificatePem = "";
+
+// Load certificate based on environment
+async function initializeCertificate() {
+  if (process.env.NODE_ENV === "production") {
+    const secret = await loadPemSecret();
+    if (!secret) throw new Error("Failed to load PEM from AWS Secrets Manager");
+    certificatePem = Buffer.from(secret, "base64").toString("utf-8");
+  } else {
+    certificatePem = Buffer.from(config.graph.pemB64, "base64").toString(
+      "utf-8"
+    );
+  }
+}
+
+async function loadPemSecret() {
+  const secret_name = "PEM_B64";
+
+  const client = new SecretsManagerClient({
+    region: "us-east-1",
+  });
+
+  let response;
+
+  try {
+    response = await client.send(
+      new GetSecretValueCommand({
+        SecretId: secret_name,
+        VersionStage: "AWSCURRENT", // VersionStage defaults to AWSCURRENT if unspecified
+      })
+    );
+  } catch (error) {
+    // For a list of exceptions thrown, see
+    // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+
+    throw error;
+  }
+
+  const secret = response.SecretString;
+  return secret;
+}
+
+initializeCertificate();
 
 const credential = new ClientCertificateCredential(tenantId, clientId, {
-  certificatePath,
+  certificate: certificatePem,
   certificatePassword,
 });
 
 // Create the Microsoft Graph client
-const graphClient = Client.initWithMiddleware({
+export const graphClient = Client.initWithMiddleware({
   authProvider: {
     getAccessToken: async () => {
       const tokenResponse = await credential.getToken(
@@ -46,25 +90,25 @@ export async function getMail() {
   }
 }
 
-export async function processEmail(messageId: string): Promise<Email> {
-  try {
-    const response = await graphClient
-      .api(`/users/${userEmail}/messages/${messageId}`)
-      .get();
-    console.log("Email fetched:", response);
-    const body = response.body;
-    const message = body.content;
-    const emailFromUser = response.sender;
+// export async function processEmail(messageId: string): Promise<Email> {
+//   try {
+//     const response = await graphClient
+//       .api(`/users/${userEmail}/messages/${messageId}`)
+//       .get();
 
-    return {
-      body: message,
-      from: emailFromUser.emailAddress.address,
-    };
-  } catch (error: any) {
-    console.error("Error processing email:", error.message);
-    throw error;
-  }
-}
+//     const body = response.body;
+//     const message = body.content;
+//     const emailFromUser = response.sender;
+
+//     return {
+//       body: message,
+//       from: emailFromUser.emailAddress.address,
+//     };
+//   } catch (error: any) {
+//     console.error("Error processing email:", error.message);
+//     throw error;
+//   }
+// }
 
 export async function replyToEmail(messageId: string, replyText: string) {
   try {
@@ -116,7 +160,7 @@ export async function createSubscription() {
       notificationUrl: `${baseUrl}/api/msgraph/webhook`,
       resource: `/users/${userEmail}/messages`,
       expirationDateTime: new Date(
-        Date.now() + 3 * 22 * 60 * 1000
+        Date.now() + 3 * 22 * 60 * 60 * 1000
       ).toISOString(),
       clientState: config.webhooks.clientState,
     });
@@ -145,5 +189,42 @@ export async function renewSubscriptions() {
       });
       console.log(`Renewed ${sub.id} until ${newExpiry}`);
     }
+  }
+}
+
+export async function getEmailConversation(
+  messageId: string
+): Promise<Email[]> {
+  try {
+    const message = await graphClient
+      .api(`/users/${userEmail}/messages/${messageId}`)
+      .select("conversationId")
+      .get();
+
+    const conversationId = message.conversationId;
+
+    const conversationMessages = await graphClient
+      .api(`/users/${userEmail}/messages`)
+      .filter(`conversationId eq '${conversationId}'`)
+      .select("id,body,from,receivedDateTime,subject")
+      .get();
+
+    const emails = conversationMessages.value
+      .sort(
+        (a: any, b: any) =>
+          new Date(a.receivedDateTime).getTime() -
+          new Date(b.receivedDateTime).getTime()
+      )
+      .map((msg: any) => ({
+        id: msg.id,
+        body: convert(msg.body.content, { wordwrap: false }),
+        from: msg.from.emailAddress.address,
+        subject: msg.subject,
+      }));
+
+    return emails;
+  } catch (error: any) {
+    console.error("Error fetching email conversation:", error.message);
+    throw error;
   }
 }

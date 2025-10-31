@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { getMail } from "../services/msgraph.service";
+import { getMail, graphClient } from "../services/msgraph.service";
 import { runEmailPipeline } from "../pipelines/emailpipeline";
 import { config } from "../config/environment";
-import axios, { AxiosError } from "axios";
 
 const router = Router();
+
+const userEmail = config.graph.userEmail;
 
 router.get("/getmail", async (req, res) => {
   try {
@@ -35,29 +36,38 @@ router.all("/webhook", async (req, res) => {
       res.status(200).send(validationToken);
       return;
     }
-
-    console.log("Webhook notification received:", req.body);
-
-    if (req.body.clientState !== config.webhooks.clientState) {
+    console.log("webhook notif");
+    const { value } = req.body;
+    if (value[0].clientState !== config.webhooks.clientState) {
       console.error("Recieved webhook notification with invalid client state");
       return res.status(401).json({ error: "Invalid client state" });
     }
 
-    const { value } = req.body;
+    res.status(202).json({ message: "Notification received" });
 
-    // Process email notifications
     if (value && value.length > 0) {
       const messageId = value[0].resource?.split("/Messages/")[1];
+
       if (messageId) {
-        console.log("Processing email notification:", messageId);
-        runEmailPipeline(messageId).catch((err) => {
-          console.error("Failed to process email:", err);
-        });
+        graphClient
+          .api(`/users/${userEmail}/messages/${messageId}`)
+          .select("from")
+          .get()
+          .then((msg: any) => {
+            const sender = msg.from?.emailAddress?.address;
+            if (sender && sender.toLowerCase() === userEmail.toLowerCase()) {
+              console.log("Ignoring message from self:", messageId);
+              return;
+            }
+            runEmailPipeline(messageId).catch((err) => {
+              console.error("Failed to process email:", err);
+            });
+          })
+          .catch((err) => {
+            console.error("Failed to check message sender:", err.message);
+          });
       }
     }
-
-    // Return 202 Accepted to acknowledge receipt
-    res.status(202).json({ message: "Notification received" });
   } catch (error: any) {
     console.error("Webhook error:", error);
     res.status(500).json({ error: "Failed to process webhook" });

@@ -1,16 +1,14 @@
 import { Router } from "express";
 import { FishbowlService } from "../services/fishbowl.service";
-import { table } from "console";
 
 const router = Router();
 const fishbowlService = FishbowlService.getInstance();
 
-router.get("/inventory", async (req, res) => {
-  console.log("Fetching inventory list");
+router.get("/activeparts", async (req, res) => {
+  console.log("Fetching active parts list");
 
   try {
-    const data = await fishbowlService.getInventory();
-    console.log("Fishbowl inventory response:", data);
+    const data = await fishbowlService.getAllActivePartNums();
     res.json({
       success: true,
       data: data,

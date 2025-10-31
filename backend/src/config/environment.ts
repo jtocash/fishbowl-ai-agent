@@ -1,8 +1,13 @@
 import { webSearchTool } from "@openai/agents";
 import dotenv from "dotenv";
+import {
+  SecretsManagerClient,
+  GetSecretValueCommand,
+} from "@aws-sdk/client-secrets-manager";
 
 dotenv.config();
 
+// Build list of required env vars based on environment
 const requiredEnvVars = [
   "FISHBOWL_USERNAME",
   "FISHBOWL_PASSWORD",
@@ -16,8 +21,10 @@ const requiredEnvVars = [
   "GRAPH_TENANT_ID",
   "GRAPH_CLIENT_ID",
   "PRODUCTION_URL",
-  "WEBHOOK_CLIENT_STATE_SECRETPHRASE"
-] as const;
+  "WEBHOOK_CLIENT_STATE_SECRETPHRASE",
+
+  ...(process.env.NODE_ENV !== "production" ? ["PEM_B64"] : []),
+];
 
 const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
 
@@ -45,13 +52,13 @@ export const config = {
     userEmail: process.env.GRAPH_USER_EMAIL!,
     tenantId: process.env.GRAPH_TENANT_ID!,
     clientId: process.env.GRAPH_CLIENT_ID!,
+    pemB64: process.env.PEM_B64!, // In production, call loadPemSecret() before using
   },
-  webhooks: 
-  {
-    baseUrl: process.env.NODE_ENV !== 'production' 
-    ? process.env.NGROK_TUNNEL! 
-    : process.env.PRODUCTION_URL!, // your actual server URL
-    clientState: process.env.WEBHOOK_CLIENT_STATE_SECRETPHRASE!
-  }
- 
+  webhooks: {
+    baseUrl:
+      process.env.NODE_ENV !== "production"
+        ? process.env.NGROK_TUNNEL!
+        : process.env.PRODUCTION_URL!, // your actual server URL
+    clientState: process.env.WEBHOOK_CLIENT_STATE_SECRETPHRASE!,
+  },
 };

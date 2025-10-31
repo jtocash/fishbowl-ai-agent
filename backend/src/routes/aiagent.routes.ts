@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { runAgent } from "../services/aiagent.service";
+import { runWorkflow } from "../services/aiagent.service";
 
 const router = Router();
 
 router.post("/input", async (req, res) => {
   const input = req.body.input as string;
   try {
-    const workflowres = await runAgent({ input_as_text: input });
+    const workflowres = await runWorkflow({ input_as_text: input });
     res.json({ agentResponse: workflowres });
   } catch (error: any) {
     console.error("AI Agent error:", error);

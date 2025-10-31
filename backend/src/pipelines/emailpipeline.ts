@@ -1,20 +1,30 @@
-import { processEmail } from "../services/msgraph.service";
-import { runAgent } from "../services/aiagent.service";
-import { config } from "../config/environment";
-import { replyToEmail } from "../services/msgraph.service";
+import { runWorkflow } from "../services/aiagent.service";
+import {
+  replyToEmail,
+  getEmailConversation,
+} from "../services/msgraph.service";
 
 export async function runEmailPipeline(messageId: string) {
   try {
-    const messageobj = await processEmail(messageId);
-    const { body, from } = messageobj;
-    if (from == config.graph.userEmail) {
-      console.log("Email from self discarded");
-      return;
+    const messageobj = await getEmailConversation(messageId);
+
+    // Get the actual latest message ID from the conversation
+    const latestMessage = messageobj[messageobj.length - 1];
+
+    let agentinput = "";
+    let from;
+    for (const email of messageobj) {
+      agentinput += `From: ${email.from} \n \n`;
+      agentinput += `Subject: ${email.subject} \n \n`;
+      agentinput += `Body: ${email.body} \n \n`;
+      agentinput += `................................ NEXT EMAIL IN CHAIN ................................ \n \n`;
+      from = email.from;
     }
 
-    const agentResponse = await runAgent({ input_as_text: body });
+    const agentResponse = await runWorkflow({ input_as_text: agentinput });
 
-    replyToEmail(messageId, agentResponse);
+    // Use the latest message's actual ID instead of the webhook notification ID
+    replyToEmail(latestMessage.id, agentResponse);
   } catch (error: any) {
     console.log(`Error running the email pipeline: ${error.message}`);
   }

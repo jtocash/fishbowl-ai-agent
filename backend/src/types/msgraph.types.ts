@@ -1,5 +1,6 @@
-export interface Email
-{
-    body: string
-    from: string
+export interface Email {
+  id: string;
+  body: string;
+  from: string;
+  subject: string;
 }
