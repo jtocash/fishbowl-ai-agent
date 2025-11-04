@@ -30,6 +30,22 @@ class FishbowlService {
         this.token = await this.tokenPromise;
         return this.token;
     }
+    async makeAuthenticatedRequest(requestFn) {
+        try {
+            return await requestFn();
+        }
+        catch (error) {
+            if (error.response?.status === 401 || error.response?.status === 403) {
+                this.token = null;
+                this.tokenPromise = null;
+                const newToken = await this.getToken();
+                if (newToken) {
+                    return await requestFn();
+                }
+            }
+            throw error;
+        }
+    }
     async loadOrCreateToken() {
         const savedToken = await this.loadTokenFromFile();
         if (savedToken) {
@@ -115,89 +131,98 @@ class FishbowlService {
             return null;
         }
     }
-    async getInventory() {
-        const token = await this.getToken();
-        if (!token) {
-            throw new Error("Failed to authenticate with Fishbowl");
-        }
-        try {
-            const response = await axios_1.default.get(`${environment_1.config.fishbowl.baseUrl}/parts/inventory`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                timeout: 10000,
-            });
-            return response.data;
-        }
-        catch (error) {
-            console.error("Error fetching inventory:", error.response?.data || error.message);
-            throw error;
-        }
-    }
+    // async getInventory() {
+    //   const token = await this.getToken();
+    //   if (!token) {
+    //     throw new Error("Failed to authenticate with Fishbowl");
+    //   }
+    //   try {
+    //     const response = await axios.get(
+    //       `${config.fishbowl.baseUrl}/parts/inventory`,
+    //       {
+    //         headers: {
+    //           "Content-Type": "application/json",
+    //           Authorization: `Bearer ${token}`,
+    //         },
+    //         timeout: 10000,
+    //       }
+    //     );
+    //     return response.data;
+    //   } catch (error: any) {
+    //     console.error(
+    //       "Error fetching inventory:",
+    //       error.response?.data || error.message
+    //     );
+    //     throw error;
+    //   }
+    // }
     async seeTable(partNumber) {
-        const token = await this.getToken();
-        if (!token) {
-            throw new Error("Failed to authenticate with Fishbowl");
-        }
-        try {
-            const response = await axios_1.default.get(`${environment_1.config.fishbowl.baseUrl}/data-query`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                timeout: 10000,
-                params: {
-                    query: `SELECT 
-    part.num AS "Part Number",
-    trackingtext.info AS "Condition",
-    tag.qty AS "Qty"
-FROM tag
-LEFT JOIN part 
-    ON tag.partid = part.id
-LEFT JOIN trackingtext 
-    ON tag.id = trackingtext.tagid
-INNER JOIN product
-    ON part.num = product.sku AND product.activeflag = true
-WHERE tag.typeid = 30 and trackingtext.info not like 'TX%' and part.num = '${partNumber}';
-`,
-                },
-            });
-            return response.data;
-        }
-        catch (error) {
-            console.error("Error fetching table:", error.response?.data || error.message);
-            throw error;
-        }
+        return await this.makeAuthenticatedRequest(async () => {
+            const token = await this.getToken();
+            if (!token) {
+                throw new Error("Failed to authenticate with Fishbowl");
+            }
+            try {
+                const response = await axios_1.default.get(`${environment_1.config.fishbowl.baseUrl}/data-query`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    timeout: 10000,
+                    params: {
+                        query: `SELECT 
+      part.num AS "Part Number",
+      trackingtext.info AS "Condition",
+      tag.qty AS "Qty"
+  FROM tag
+  LEFT JOIN part 
+      ON tag.partid = part.id
+  LEFT JOIN trackingtext 
+      ON tag.id = trackingtext.tagid
+  INNER JOIN product
+      ON part.num = product.sku AND product.activeflag = true
+  WHERE tag.typeid = 30 and trackingtext.info not like 'TX%' and part.num = '${partNumber}';
+  `,
+                    },
+                });
+                return response.data;
+            }
+            catch (error) {
+                console.error("Error fetching table:", error.response?.data || error.message);
+                throw error;
+            }
+        });
     }
     async getAllActivePartNums() {
-        const token = await this.getToken();
-        if (!token) {
-            throw new Error("Failed to authenticate with Fishbowl");
-        }
-        try {
-            const response = await axios_1.default.get(`${environment_1.config.fishbowl.baseUrl}/data-query`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                timeout: 10000,
-                params: {
-                    query: `SELECT 
-    part.num AS "Part Number"
-  FROM part
-  INNER JOIN product
-    ON part.num = product.sku AND product.activeflag = true
-  `,
-                },
-            });
-            const stringlist = response.data.map((obj) => obj["Part Number"]);
-            return stringlist;
-        }
-        catch (error) {
-            console.error("Error in getting active parts:", error.response?.data || error.message);
-            throw error;
-        }
+        return await this.makeAuthenticatedRequest(async () => {
+            const token = await this.getToken();
+            if (!token) {
+                throw new Error("Failed to authenticate with Fishbowl");
+            }
+            try {
+                const response = await axios_1.default.get(`${environment_1.config.fishbowl.baseUrl}/data-query`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    timeout: 10000,
+                    params: {
+                        query: `SELECT 
+      part.num AS "Part Number"
+    FROM part
+    INNER JOIN product
+      ON part.num = product.sku AND product.activeflag = true
+    `,
+                    },
+                });
+                const stringlist = response.data.map((obj) => obj["Part Number"]);
+                return stringlist;
+            }
+            catch (error) {
+                console.error("Error in getting active parts:", error.response?.data || error.message);
+                throw error;
+            }
+        });
     }
 }
 exports.FishbowlService = FishbowlService;

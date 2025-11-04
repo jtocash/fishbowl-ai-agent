@@ -6,12 +6,12 @@ export declare class FishbowlService {
     private constructor();
     static getInstance(): FishbowlService;
     getToken(): Promise<string | null>;
+    private makeAuthenticatedRequest;
     private loadOrCreateToken;
     private loadTokenFromFile;
     private saveTokenToFile;
     private validateToken;
     private login;
-    getInventory(): Promise<any>;
     seeTable(partNumber: string): Promise<InventoryTable>;
     getAllActivePartNums(): Promise<string[]>;
 }
