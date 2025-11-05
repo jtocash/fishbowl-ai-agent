@@ -63,4 +63,18 @@ router.get("/seetable", async (req, res) => {
   }
 });
 
+router.get("/expiretoken", async (req, res) => {
+  try {
+    await fishbowlService.expireToken();
+    res.json({
+      message: "expired",
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
 export default router;

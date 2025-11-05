@@ -6,6 +6,7 @@ export declare class FishbowlService {
     private constructor();
     static getInstance(): FishbowlService;
     getToken(): Promise<string | null>;
+    expireToken(): void;
     private makeAuthenticatedRequest;
     private loadOrCreateToken;
     private loadTokenFromFile;

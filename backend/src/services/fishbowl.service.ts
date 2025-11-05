@@ -33,19 +33,28 @@ export class FishbowlService {
     return this.token;
   }
 
+  public expireToken(): void {
+    if (this.token) {
+      this.token = this.token.slice(0, -5) + "XXXXX";
+      console.log("Token corrupted for testing");
+    }
+  }
+
   private async makeAuthenticatedRequest<T>(
-    requestFn: () => Promise<T>
+    requestFn: () => Promise<T>,
+    hasRetried: boolean = false
   ): Promise<T> {
     try {
       return await requestFn();
     } catch (error: any) {
-      if (error.response?.status === 401 || error.response?.status === 403) {
+      if (
+        (error.response?.status === 401 || error.response?.status === 403) &&
+        !hasRetried
+      ) {
         this.token = null;
         this.tokenPromise = null;
-        const newToken = await this.getToken();
-        if (newToken) {
-          return await requestFn();
-        }
+        await this.getToken();
+        return await this.makeAuthenticatedRequest(requestFn, true);
       }
       throw error;
     }

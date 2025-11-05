@@ -10,6 +10,7 @@ export declare const config: {
     };
     OpenAI: {
         apiKey: string;
+        vectorStoreId: string;
     };
     graph: {
         certificatePassword: string;

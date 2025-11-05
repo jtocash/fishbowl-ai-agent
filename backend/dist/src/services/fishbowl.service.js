@@ -30,18 +30,23 @@ class FishbowlService {
         this.token = await this.tokenPromise;
         return this.token;
     }
-    async makeAuthenticatedRequest(requestFn) {
+    expireToken() {
+        if (this.token) {
+            this.token = this.token.slice(0, -5) + "XXXXX";
+            console.log("Token corrupted for testing");
+        }
+    }
+    async makeAuthenticatedRequest(requestFn, hasRetried = false) {
         try {
             return await requestFn();
         }
         catch (error) {
-            if (error.response?.status === 401 || error.response?.status === 403) {
+            if ((error.response?.status === 401 || error.response?.status === 403) &&
+                !hasRetried) {
                 this.token = null;
                 this.tokenPromise = null;
-                const newToken = await this.getToken();
-                if (newToken) {
-                    return await requestFn();
-                }
+                await this.getToken();
+                return await this.makeAuthenticatedRequest(requestFn, true);
             }
             throw error;
         }

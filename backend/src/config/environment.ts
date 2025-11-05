@@ -23,6 +23,7 @@ const requiredEnvVars = [
   "PRODUCTION_URL",
   "WEBHOOK_CLIENT_STATE_SECRETPHRASE",
   "NODE_ENV",
+  "VECTOR_STORE_ID",
 
   ...(process.env.NODE_ENV !== "production" ? ["PEM_B64"] : []),
 ];
@@ -47,6 +48,7 @@ export const config = {
   },
   OpenAI: {
     apiKey: process.env.OPENAI_API_KEY!,
+    vectorStoreId: process.env.VECTOR_STORE_ID!,
   },
   graph: {
     certificatePassword: process.env.GRAPH_CERTIFICATE_PASSWORD!,
