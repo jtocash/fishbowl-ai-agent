@@ -5,7 +5,6 @@ const agents_1 = require("@openai/agents");
 const zod_1 = require("zod");
 const fishbowl_service_1 = require("./fishbowl.service");
 const fuzzymatch_1 = require("../utility/fuzzymatch");
-const fishbowlService = fishbowl_service_1.FishbowlService.getInstance();
 // Tool definitions
 const getTableByPartNumber = (0, agents_1.tool)({
     name: "getTableByPartNumber",
@@ -14,7 +13,13 @@ const getTableByPartNumber = (0, agents_1.tool)({
         part_number: zod_1.z.string(),
     }),
     execute: async (input) => {
-        return await fishbowlService.seeTable(input.part_number);
+        try {
+            return await fishbowl_service_1.fishbowlService.seeTable(input.part_number);
+        }
+        catch (error) {
+            console.error("Tool error - getTableByPartNumber:", error.message);
+            throw error; // Re-throw so agent sees the error
+        }
     },
 });
 const fuzzyMatchPartNumbers = (0, agents_1.tool)({
@@ -24,7 +29,13 @@ const fuzzyMatchPartNumbers = (0, agents_1.tool)({
         input_string: zod_1.z.string(),
     }),
     execute: async (input) => {
-        return (0, fuzzymatch_1.fuzzyMatchInputToPartNum)(input.input_string);
+        try {
+            return (0, fuzzymatch_1.fuzzyMatchInputToPartNum)(input.input_string);
+        }
+        catch (error) {
+            console.error("Tool error - fuzzyMatchPartNumbers:", error.message, error);
+            throw error;
+        }
     },
 });
 const fileSearch = (0, agents_1.fileSearchTool)(["vs_6900ef47ff30819188007e46909d5374"]);
@@ -43,37 +54,43 @@ const getPartNumber = new agents_1.Agent({
 });
 // Main code entrypoint
 const runWorkflow = async (workflow) => {
-    return await (0, agents_1.withTrace)("fishbowl agent test", async () => {
-        const state = {};
-        const conversationHistory = [
-            {
-                role: "user",
-                content: [
-                    {
-                        type: "input_text",
-                        text: workflow.input_as_text,
-                    },
-                ],
-            },
-        ];
-        const runner = new agents_1.Runner({
-            traceMetadata: {
-                __trace_source__: "agent-builder",
-                workflow_id: "wf_68ef23b0b158819084d92dfaa1b11d7f0d9a7e39776394e5",
-            },
+    try {
+        return await (0, agents_1.withTrace)("fishbowl agent test", async () => {
+            const state = {};
+            const conversationHistory = [
+                {
+                    role: "user",
+                    content: [
+                        {
+                            type: "input_text",
+                            text: workflow.input_as_text,
+                        },
+                    ],
+                },
+            ];
+            const runner = new agents_1.Runner({
+                traceMetadata: {
+                    __trace_source__: "agent-builder",
+                    workflow_id: "wf_68ef23b0b158819084d92dfaa1b11d7f0d9a7e39776394e5",
+                },
+            });
+            const getPartNumberResultTemp = await runner.run(getPartNumber, [
+                ...conversationHistory,
+            ]);
+            conversationHistory.push(...getPartNumberResultTemp.newItems.map((item) => item.rawItem));
+            if (!getPartNumberResultTemp.finalOutput) {
+                throw new Error("Agent result is undefined");
+            }
+            const getPartNumberResult = {
+                output_text: getPartNumberResultTemp.finalOutput ?? "",
+            };
+            return getPartNumberResult.output_text;
         });
-        const getPartNumberResultTemp = await runner.run(getPartNumber, [
-            ...conversationHistory,
-        ]);
-        conversationHistory.push(...getPartNumberResultTemp.newItems.map((item) => item.rawItem));
-        if (!getPartNumberResultTemp.finalOutput) {
-            throw new Error("Agent result is undefined");
-        }
-        const getPartNumberResult = {
-            output_text: getPartNumberResultTemp.finalOutput ?? "",
-        };
-        return getPartNumberResult.output_text;
-    });
+    }
+    catch (error) {
+        console.error("Workflow execution error:", error.message);
+        throw error;
+    }
 };
 exports.runWorkflow = runWorkflow;
 //# sourceMappingURL=aiagent.service.js.map

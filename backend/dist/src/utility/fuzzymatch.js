@@ -8,8 +8,7 @@ const fuzzball_1 = __importDefault(require("fuzzball"));
 const fishbowl_service_1 = require("../services/fishbowl.service");
 async function fuzzyMatchInputToPartNum(input) {
     const inputnormalized = input.toUpperCase();
-    const fbs = fishbowl_service_1.FishbowlService.getInstance();
-    const partnums = await fbs.getAllActivePartNums();
+    const partnums = await fishbowl_service_1.fishbowlService.getAllActivePartNums();
     let res = [];
     for (const partnum of partnums) {
         const score = fuzzball_1.default.ratio(inputnormalized, partnum);

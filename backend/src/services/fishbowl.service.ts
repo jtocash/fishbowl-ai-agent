@@ -41,20 +41,17 @@ export class FishbowlService {
   }
 
   private async makeAuthenticatedRequest<T>(
-    requestFn: () => Promise<T>,
-    hasRetried: boolean = false
+    requestFn: () => Promise<T>
   ): Promise<T> {
     try {
       return await requestFn();
     } catch (error: any) {
-      if (
-        (error.response?.status === 401 || error.response?.status === 403) &&
-        !hasRetried
-      ) {
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        console.log("make auth request 1");
         this.token = null;
         this.tokenPromise = null;
         await this.getToken();
-        return await this.makeAuthenticatedRequest(requestFn, true);
+        return await requestFn();
       }
       throw error;
     }
@@ -62,6 +59,7 @@ export class FishbowlService {
 
   private async loadOrCreateToken(): Promise<string | null> {
     const savedToken = await this.loadTokenFromFile();
+    console.log("loading or creating token");
 
     if (savedToken) {
       const isValid = await this.validateToken(savedToken);
@@ -123,7 +121,7 @@ export class FishbowlService {
     }
   }
 
-  private async login(): Promise<string | null> {
+  public async login(): Promise<string | null> {
     console.log("Logging in to Fishbowl...");
     try {
       const response = await axios.post(
@@ -212,7 +210,7 @@ export class FishbowlService {
       ON tag.id = trackingtext.tagid
   INNER JOIN product
       ON part.num = product.sku AND product.activeflag = true
-  WHERE tag.typeid = 30 and trackingtext.info not like 'TX%' and part.num = '${partNumber}';
+  WHERE tag.typeid = 30 and trackingtext.info not like 'TX%' and trackingtext.info like 'RWI11' and part.num = '${partNumber}';
   `,
             },
           }
@@ -268,3 +266,5 @@ export class FishbowlService {
     });
   }
 }
+
+export const fishbowlService = FishbowlService.getInstance();

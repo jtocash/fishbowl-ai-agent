@@ -1,10 +1,9 @@
 import fuzz from "fuzzball";
-import { FishbowlService } from "../services/fishbowl.service";
+import { fishbowlService } from "../services/fishbowl.service";
 
 export async function fuzzyMatchInputToPartNum(input: string) {
   const inputnormalized = input.toUpperCase();
-  const fbs = FishbowlService.getInstance();
-  const partnums = await fbs.getAllActivePartNums();
+  const partnums = await fishbowlService.getAllActivePartNums();
   let res: [number, string][] = [];
   for (const partnum of partnums) {
     const score = fuzz.ratio(inputnormalized, partnum);

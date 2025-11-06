@@ -12,8 +12,9 @@ export declare class FishbowlService {
     private loadTokenFromFile;
     private saveTokenToFile;
     private validateToken;
-    private login;
+    login(): Promise<string | null>;
     seeTable(partNumber: string): Promise<InventoryTable>;
     getAllActivePartNums(): Promise<string[]>;
 }
+export declare const fishbowlService: FishbowlService;
 //# sourceMappingURL=fishbowl.service.d.ts.map

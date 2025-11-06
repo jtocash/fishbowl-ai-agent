@@ -6,6 +6,7 @@ import fishbowlRoutes from "./routes/fishbowl.routes";
 import aiAgentRoutes from "./routes/aiagent.routes";
 import msGraphRoutes from "./routes/msgraph.routes";
 import { msGraphService } from "./services/msgraph.service";
+import { fishbowlService } from "./services/fishbowl.service";
 
 const app = express();
 
@@ -44,6 +45,18 @@ async function initializeWebhooks() {
   } catch (error: any) {
     console.error("Failed to initialize webhooks:", error.message);
   }
+
+  // Relogin every 30 minutes
+  setInterval(
+    async () => {
+      try {
+        await fishbowlService.login();
+      } catch (error: any) {
+        console.error("Scheduled relogin failed:", error.message);
+      }
+    },
+    30 * 60 * 1000
+  );
 }
 
 app.listen(config.port, async () => {

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FishbowlService = void 0;
+exports.fishbowlService = exports.FishbowlService = void 0;
 const axios_1 = __importDefault(require("axios"));
 const environment_1 = require("../config/environment");
 const promises_1 = __importDefault(require("fs/promises"));
@@ -36,23 +36,24 @@ class FishbowlService {
             console.log("Token corrupted for testing");
         }
     }
-    async makeAuthenticatedRequest(requestFn, hasRetried = false) {
+    async makeAuthenticatedRequest(requestFn) {
         try {
             return await requestFn();
         }
         catch (error) {
-            if ((error.response?.status === 401 || error.response?.status === 403) &&
-                !hasRetried) {
+            if (error.response?.status === 401 || error.response?.status === 403) {
+                console.log("make auth request 1");
                 this.token = null;
                 this.tokenPromise = null;
                 await this.getToken();
-                return await this.makeAuthenticatedRequest(requestFn, true);
+                return await requestFn();
             }
             throw error;
         }
     }
     async loadOrCreateToken() {
         const savedToken = await this.loadTokenFromFile();
+        console.log("loading or creating token");
         if (savedToken) {
             const isValid = await this.validateToken(savedToken);
             if (isValid) {
@@ -186,7 +187,7 @@ class FishbowlService {
       ON tag.id = trackingtext.tagid
   INNER JOIN product
       ON part.num = product.sku AND product.activeflag = true
-  WHERE tag.typeid = 30 and trackingtext.info not like 'TX%' and part.num = '${partNumber}';
+  WHERE tag.typeid = 30 and trackingtext.info not like 'TX%' and trackingtext.info like 'RWI11' and part.num = '${partNumber}';
   `,
                     },
                 });
@@ -232,4 +233,5 @@ class FishbowlService {
 }
 exports.FishbowlService = FishbowlService;
 FishbowlService.instance = null;
+exports.fishbowlService = FishbowlService.getInstance();
 //# sourceMappingURL=fishbowl.service.js.map

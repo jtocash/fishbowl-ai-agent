@@ -11,6 +11,7 @@ const fishbowl_routes_1 = __importDefault(require("./routes/fishbowl.routes"));
 const aiagent_routes_1 = __importDefault(require("./routes/aiagent.routes"));
 const msgraph_routes_1 = __importDefault(require("./routes/msgraph.routes"));
 const msgraph_service_1 = require("./services/msgraph.service");
+const fishbowl_service_1 = require("./services/fishbowl.service");
 const app = (0, express_1.default)();
 // Middleware
 app.use((0, cors_1.default)());
@@ -43,6 +44,15 @@ async function initializeWebhooks() {
     catch (error) {
         console.error("Failed to initialize webhooks:", error.message);
     }
+    // Relogin every 30 minutes
+    setInterval(async () => {
+        try {
+            await fishbowl_service_1.fishbowlService.login();
+        }
+        catch (error) {
+            console.error("Scheduled relogin failed:", error.message);
+        }
+    }, 30 * 60 * 1000);
 }
 app.listen(environment_1.config.port, async () => {
     console.log(`✅ Server running on port ${environment_1.config.port}`);
