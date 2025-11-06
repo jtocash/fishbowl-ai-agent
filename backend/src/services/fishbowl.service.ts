@@ -189,17 +189,16 @@ export class FishbowlService {
         throw new Error("Failed to authenticate with Fishbowl");
       }
 
-      try {
-        const response = await axios.get(
-          `${config.fishbowl.baseUrl}/data-query`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            timeout: 10000,
-            params: {
-              query: `SELECT 
+      const response = await axios.get(
+        `${config.fishbowl.baseUrl}/data-query`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          timeout: 10000,
+          params: {
+            query: `SELECT 
       part.num AS "Part Number",
       trackingtext.info AS "Condition",
       tag.qty AS "Qty"
@@ -212,18 +211,11 @@ export class FishbowlService {
       ON part.num = product.sku AND product.activeflag = true
   WHERE tag.typeid = 30 and trackingtext.info not like 'TX%' and trackingtext.info like 'RWI11' and part.num = '${partNumber}';
   `,
-            },
-          }
-        );
+          },
+        }
+      );
 
-        return response.data;
-      } catch (error: any) {
-        console.error(
-          "Error fetching table:",
-          error.response?.data || error.message
-        );
-        throw error;
-      }
+      return response.data;
     });
   }
 
@@ -235,34 +227,26 @@ export class FishbowlService {
         throw new Error("Failed to authenticate with Fishbowl");
       }
 
-      try {
-        const response = await axios.get(
-          `${config.fishbowl.baseUrl}/data-query`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            timeout: 10000,
-            params: {
-              query: `SELECT 
+      const response = await axios.get(
+        `${config.fishbowl.baseUrl}/data-query`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          timeout: 10000,
+          params: {
+            query: `SELECT 
       part.num AS "Part Number"
     FROM part
     INNER JOIN product
       ON part.num = product.sku AND product.activeflag = true
     `,
-            },
-          }
-        );
-        const stringlist = response.data.map((obj: any) => obj["Part Number"]);
-        return stringlist;
-      } catch (error: any) {
-        console.error(
-          "Error in getting active parts:",
-          error.response?.data || error.message
-        );
-        throw error;
-      }
+          },
+        }
+      );
+      const stringlist = response.data.map((obj: any) => obj["Part Number"]);
+      return stringlist;
     });
   }
 }
