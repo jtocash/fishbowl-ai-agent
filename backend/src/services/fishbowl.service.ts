@@ -255,12 +255,16 @@ export class FishbowlService {
         throw new Error("Failed to authenticate with Fishbowl");
       }
 
-      const response = await axios.post(`${config.fishbowl.baseUrl}/logout`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        timeout: 10000,
-      });
+      const response = await axios.post(
+        `${config.fishbowl.baseUrl}/logout`,
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          timeout: 10000,
+        }
+      );
       this.token = null;
       return response;
     } catch (error: any) {
