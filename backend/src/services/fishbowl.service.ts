@@ -249,6 +249,28 @@ export class FishbowlService {
       return stringlist;
     });
   }
+
+  async logOut() {
+    try {
+      const token = await this.getToken();
+
+      if (!token) {
+        throw new Error("Failed to authenticate with Fishbowl");
+      }
+
+      const response = await axios.get(`${config.fishbowl.baseUrl}/logout`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        timeout: 10000,
+      });
+      this.token = null;
+      return response;
+    } catch (error: any) {
+      console.log(`Error logging out: ${error.message} `);
+      throw error;
+    }
+  }
 }
 
 export const fishbowlService = FishbowlService.getInstance();

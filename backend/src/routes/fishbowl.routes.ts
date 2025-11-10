@@ -1,8 +1,7 @@
 import { Router } from "express";
-import { FishbowlService } from "../services/fishbowl.service";
+import { fishbowlService } from "../services/fishbowl.service";
 
 const router = Router();
-const fishbowlService = FishbowlService.getInstance();
 
 router.get("/activeparts", async (req, res) => {
   console.log("Fetching active parts list");

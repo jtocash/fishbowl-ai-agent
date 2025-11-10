@@ -50,6 +50,7 @@ async function initializeWebhooks() {
   setInterval(
     async () => {
       try {
+        await fishbowlService.logOut();
         await fishbowlService.login();
       } catch (error: any) {
         console.error("Scheduled relogin failed:", error.message);
