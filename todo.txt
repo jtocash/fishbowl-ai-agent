@@ -1,3 +1,4 @@
+add fishbowl login refresh
 possibly lock down model giving out specifications
 3. go from internal condition to simple "new, used" etc
 4. if unsure, email a higher up.

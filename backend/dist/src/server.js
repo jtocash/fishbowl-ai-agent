@@ -47,6 +47,7 @@ async function initializeWebhooks() {
     // Relogin every 30 minutes
     setInterval(async () => {
         try {
+            await fishbowl_service_1.fishbowlService.logOut();
             await fishbowl_service_1.fishbowlService.login();
         }
         catch (error) {

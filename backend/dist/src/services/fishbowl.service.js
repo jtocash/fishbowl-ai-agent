@@ -41,14 +41,11 @@ class FishbowlService {
             return await requestFn();
         }
         catch (error) {
-            if (error.response?.status === 401 || error.response?.status === 403) {
-                console.log("make auth request 1");
-                this.token = null;
-                this.tokenPromise = null;
-                await this.getToken();
-                return await requestFn();
-            }
-            throw error;
+            console.log("make auth request 1");
+            this.token = null;
+            this.tokenPromise = null;
+            await this.getToken();
+            return await requestFn();
         }
     }
     async loadOrCreateToken() {
@@ -217,6 +214,26 @@ class FishbowlService {
             const stringlist = response.data.map((obj) => obj["Part Number"]);
             return stringlist;
         });
+    }
+    async logOut() {
+        try {
+            const token = await this.getToken();
+            if (!token) {
+                throw new Error("Failed to authenticate with Fishbowl");
+            }
+            const response = await axios_1.default.post(`${environment_1.config.fishbowl.baseUrl}/logout`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                timeout: 10000,
+            });
+            this.token = null;
+            return response;
+        }
+        catch (error) {
+            console.log(`Error logging out: ${error.message} `);
+            throw error;
+        }
     }
 }
 exports.FishbowlService = FishbowlService;

@@ -3,11 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const fishbowl_service_1 = require("../services/fishbowl.service");
 const router = (0, express_1.Router)();
-const fishbowlService = fishbowl_service_1.FishbowlService.getInstance();
 router.get("/activeparts", async (req, res) => {
     console.log("Fetching active parts list");
     try {
-        const data = await fishbowlService.getAllActivePartNums();
+        const data = await fishbowl_service_1.fishbowlService.getAllActivePartNums();
         res.json({
             success: true,
             data: data,
@@ -23,7 +22,7 @@ router.get("/activeparts", async (req, res) => {
 });
 router.get("/test-token", async (req, res) => {
     try {
-        const token = await fishbowlService.getToken();
+        const token = await fishbowl_service_1.fishbowlService.getToken();
         console.log("Token:", token);
         res.json({
             success: true,
@@ -41,7 +40,7 @@ router.get("/test-token", async (req, res) => {
 });
 router.get("/seetable", async (req, res) => {
     try {
-        const table = await fishbowlService.seeTable(req.query.partNumber);
+        const table = await fishbowl_service_1.fishbowlService.seeTable(req.query.partNumber);
         console.log("Table:", table);
         res.json({
             success: true,
@@ -59,7 +58,7 @@ router.get("/seetable", async (req, res) => {
 });
 router.get("/expiretoken", async (req, res) => {
     try {
-        await fishbowlService.expireToken();
+        await fishbowl_service_1.fishbowlService.expireToken();
         res.json({
             message: "expired",
         });

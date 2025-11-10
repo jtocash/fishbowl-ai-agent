@@ -46,14 +46,11 @@ export class FishbowlService {
     try {
       return await requestFn();
     } catch (error: any) {
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        console.log("make auth request 1");
-        this.token = null;
-        this.tokenPromise = null;
-        await this.getToken();
-        return await requestFn();
-      }
-      throw error;
+      console.log("make auth request 1");
+      this.token = null;
+      this.tokenPromise = null;
+      await this.getToken();
+      return await requestFn();
     }
   }
 
@@ -258,7 +255,7 @@ export class FishbowlService {
         throw new Error("Failed to authenticate with Fishbowl");
       }
 
-      const response = await axios.get(`${config.fishbowl.baseUrl}/logout`, {
+      const response = await axios.post(`${config.fishbowl.baseUrl}/logout`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
