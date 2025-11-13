@@ -90,7 +90,7 @@ class MsGraphService {
 
   async getMail() {
     try {
-      console.log("🔑 Getting Graph data...");
+      console.log("Getting Graph data...");
 
       const messages = await (await this.getClient())
         .api(`/users/${userEmail}/messages`)

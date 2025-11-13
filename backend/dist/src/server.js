@@ -44,6 +44,8 @@ async function initializeWebhooks() {
     catch (error) {
         console.error("Failed to initialize webhooks:", error.message);
     }
+}
+async function manageFishbowlLogin() {
     // Relogin every 30 minutes
     setInterval(async () => {
         try {
@@ -58,6 +60,8 @@ async function initializeWebhooks() {
 app.listen(environment_1.config.port, async () => {
     console.log(`✅ Server running on port ${environment_1.config.port}`);
     // Initialize webhooks after server starts
+    await fishbowl_service_1.fishbowlService.getToken();
     await initializeWebhooks();
+    await manageFishbowlLogin;
 });
 //# sourceMappingURL=server.js.map

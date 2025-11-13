@@ -87,6 +87,16 @@ export class FishbowlService {
     }
   }
 
+  private async deleteTokenFile(): Promise<void> {
+    try {
+      await fs.unlink(TOKEN_FILE_PATH);
+    } catch (error: any) {
+      if (error.code !== "ENOENT") {
+        console.error("Failed to delete token file:", error);
+      }
+    }
+  }
+
   private async saveTokenToFile(token: string): Promise<void> {
     try {
       await fs.writeFile(TOKEN_FILE_PATH, token, "utf-8");
@@ -149,34 +159,33 @@ export class FishbowlService {
     }
   }
 
-  // async getInventory() {
-  //   const token = await this.getToken();
+  async logOut() {
+    try {
+      const token = await this.getToken();
 
-  //   if (!token) {
-  //     throw new Error("Failed to authenticate with Fishbowl");
-  //   }
+      if (!token) {
+        throw new Error("Failed to authenticate with Fishbowl");
+      }
 
-  //   try {
-  //     const response = await axios.get(
-  //       `${config.fishbowl.baseUrl}/parts/inventory`,
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //         timeout: 10000,
-  //       }
-  //     );
-
-  //     return response.data;
-  //   } catch (error: any) {
-  //     console.error(
-  //       "Error fetching inventory:",
-  //       error.response?.data || error.message
-  //     );
-  //     throw error;
-  //   }
-  // }
+      const response = await axios.post(
+        `${config.fishbowl.baseUrl}/logout`,
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          timeout: 10000,
+        }
+      );
+      this.token = null;
+      this.tokenPromise = null;
+      this.deleteTokenFile();
+      return response;
+    } catch (error: any) {
+      console.log(`Error logging out: ${error.message} `);
+      throw error;
+    }
+  }
 
   async seeTable(partNumber: string): Promise<InventoryTable> {
     return await this.makeAuthenticatedRequest(async () => {
@@ -247,30 +256,29 @@ export class FishbowlService {
     });
   }
 
-  async logOut() {
-    try {
+  async getAllPartNumsWithDescription(): Promise<object[]> {
+    return await this.makeAuthenticatedRequest(async () => {
       const token = await this.getToken();
 
       if (!token) {
         throw new Error("Failed to authenticate with Fishbowl");
       }
 
-      const response = await axios.post(
-        `${config.fishbowl.baseUrl}/logout`,
-        null,
+      const response = await axios.get(
+        `${config.fishbowl.baseUrl}/data-query`,
         {
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
           timeout: 10000,
+          params: {
+            query: `SELECT part.num as "Part Num", part.description as 'Description' FROM part`,
+          },
         }
       );
-      this.token = null;
-      return response;
-    } catch (error: any) {
-      console.log(`Error logging out: ${error.message} `);
-      throw error;
-    }
+      return response.data;
+    });
   }
 }
 

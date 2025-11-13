@@ -77,6 +77,16 @@ class FishbowlService {
             return null;
         }
     }
+    async deleteTokenFile() {
+        try {
+            await promises_1.default.unlink(TOKEN_FILE_PATH);
+        }
+        catch (error) {
+            if (error.code !== "ENOENT") {
+                console.error("Failed to delete token file:", error);
+            }
+        }
+    }
     async saveTokenToFile(token) {
         try {
             await promises_1.default.writeFile(TOKEN_FILE_PATH, token, "utf-8");
@@ -221,13 +231,15 @@ class FishbowlService {
             if (!token) {
                 throw new Error("Failed to authenticate with Fishbowl");
             }
-            const response = await axios_1.default.post(`${environment_1.config.fishbowl.baseUrl}/logout`, {
+            const response = await axios_1.default.post(`${environment_1.config.fishbowl.baseUrl}/logout`, null, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
                 timeout: 10000,
             });
             this.token = null;
+            this.tokenPromise = null;
+            this.deleteTokenFile();
             return response;
         }
         catch (error) {

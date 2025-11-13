@@ -10,6 +10,7 @@ export declare class FishbowlService {
     private makeAuthenticatedRequest;
     private loadOrCreateToken;
     private loadTokenFromFile;
+    private deleteTokenFile;
     private saveTokenToFile;
     private validateToken;
     login(): Promise<string | null>;
