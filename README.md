@@ -2,6 +2,8 @@
 
 An AI agent that can access your Fishbowl inventory system and provide relevant information to customers. The frontend is currently for testing purposes only - a production frontend implementation will likely use ChatKit.
 
+Frontend will be removed in favor of Postman testing.
+
 ## Tech Stack
 
 **Backend:**
