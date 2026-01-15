@@ -1,5 +1,7 @@
 import { config } from "../config/environment";
 import axios from "axios";
+import fs from "fs";
+import path from "path";
 import { ListFilesResponse } from "../types/vectorstore.types";
 import { fishbowlService } from "./fishbowl.service";
 import { OpenAIClientService } from "./openaiclient.service";
@@ -68,6 +70,11 @@ class VectorStoreService extends OpenAIClientService {
       const partswithdesc =
         await fishbowlService.getAllPartNumsWithDescription();
       const jsonpartswithdesc = JSON.stringify(partswithdesc);
+        // Save locally
+        // const localPath = path.join(__dirname, "../../data/parts.json");
+        // fs.mkdirSync(path.dirname(localPath), { recursive: true });
+        // fs.writeFileSync(localPath, jsonpartswithdesc);
+        // console.log(`Saved parts JSON locally to ${localPath}`);
       const newfileid =
         await openAIFileService.createFileFromJSON(jsonpartswithdesc);
       await this.addFile(newfileid);

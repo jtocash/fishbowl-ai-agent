@@ -7,16 +7,17 @@ export declare class FishbowlService {
     static getInstance(): FishbowlService;
     getToken(): Promise<string | null>;
     expireToken(): void;
-    private makeAuthenticatedRequest;
+    private makeFishbowlRequest;
     private loadOrCreateToken;
     private loadTokenFromFile;
     private deleteTokenFile;
     private saveTokenToFile;
     private validateToken;
     login(): Promise<string | null>;
+    logOut(): Promise<import("axios").AxiosResponse<any, any, {}>>;
     seeTable(partNumber: string): Promise<InventoryTable>;
     getAllActivePartNums(): Promise<string[]>;
-    logOut(): Promise<import("axios").AxiosResponse<any, any, {}>>;
+    getAllPartNumsWithDescription(): Promise<object[]>;
 }
 export declare const fishbowlService: FishbowlService;
 //# sourceMappingURL=fishbowl.service.d.ts.map

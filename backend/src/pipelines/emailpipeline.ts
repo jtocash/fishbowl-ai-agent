@@ -21,7 +21,7 @@ export async function runEmailPipeline(messageId: string) {
     const agentResponse = await runWorkflow({ input_as_text: agentinput });
 
     // Use the latest message's actual ID instead of the webhook notification ID
-    msGraphService.replyToEmail(latestMessage.id, agentResponse);
+    msGraphService.replyToEmail(latestMessage.id, agentResponse.output_text);
   } catch (error: any) {
     console.log(`Error running the email pipeline: ${error.message}`);
   }

@@ -11,7 +11,7 @@ const fishbowl_routes_1 = __importDefault(require("./routes/fishbowl.routes"));
 const aiagent_routes_1 = __importDefault(require("./routes/aiagent.routes"));
 const msgraph_routes_1 = __importDefault(require("./routes/msgraph.routes"));
 const msgraph_service_1 = require("./services/msgraph.service");
-const fishbowl_service_1 = require("./services/fishbowl.service");
+const vectorstore_service_1 = require("./services/vectorstore.service");
 const app = (0, express_1.default)();
 // Middleware
 app.use((0, cors_1.default)());
@@ -45,23 +45,52 @@ async function initializeWebhooks() {
         console.error("Failed to initialize webhooks:", error.message);
     }
 }
-async function manageFishbowlLogin() {
-    // Relogin every 30 minutes
+// function manageFishbowlLogin() {
+//   // Relogin every 30 minutes
+//   setInterval(
+//     async () => {
+//         console.log("Scheduled relogin, Relogging into fishbowl");
+//         try {
+//           await fishbowlService.logOut();
+//         } catch (error: any) {
+//           console.error("Failed to log out:", error.message);
+//         }
+//         try {
+//           await fishbowlService.login();
+//         } catch (error: any) {
+//           console.error("Failed to login:", error.message);
+//         }
+//     },
+//     30 * 60 * 1000
+//   );
+// }
+function manageVectorStore() {
     setInterval(async () => {
-        try {
-            await fishbowl_service_1.fishbowlService.logOut();
-            await fishbowl_service_1.fishbowlService.login();
+        const now = new Date();
+        const day = now.getDay(); // 0 = Sunday, 6 = Saturday
+        const hour = now.getHours();
+        // Run if it's Saturday (6) at midnight (0)
+        if (day === 6 && hour === 0) {
+            try {
+                await vectorstore_service_1.vectorStoreService.updateVectorStore();
+                console.log("Vector store updated on Saturday at midnight");
+            }
+            catch (error) {
+                console.error("Scheduled vector store update failed:", error.message);
+            }
         }
-        catch (error) {
-            console.error("Scheduled relogin failed:", error.message);
-        }
-    }, 30 * 60 * 1000);
+    }, 60 * 60 * 1000 // Check every hour
+    );
 }
 app.listen(environment_1.config.port, async () => {
-    console.log(`✅ Server running on port ${environment_1.config.port}`);
-    // Initialize webhooks after server starts
-    await fishbowl_service_1.fishbowlService.getToken();
+    console.log(`Server running on port ${environment_1.config.port}`);
     await initializeWebhooks();
-    await manageFishbowlLogin;
+    try {
+        await vectorstore_service_1.vectorStoreService.updateVectorStore();
+    }
+    catch (error) {
+        console.error("Scheduled vector store update failed:", error.message);
+    }
+    manageVectorStore();
 });
 //# sourceMappingURL=server.js.map

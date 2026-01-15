@@ -36,16 +36,24 @@ class FishbowlService {
             console.log("Token corrupted for testing");
         }
     }
-    async makeAuthenticatedRequest(requestFn) {
+    async makeFishbowlRequest(requestFn) {
         try {
-            return await requestFn();
+            const token = await this.login();
+            if (!token) {
+                throw new Error("Failed to authenticate with Fishbowl");
+            }
+            this.token = token;
+            const result = await requestFn(token);
+            await this.logOut();
+            return result;
         }
         catch (error) {
-            console.log("make auth request 1");
-            this.token = null;
-            this.tokenPromise = null;
-            await this.getToken();
-            return await requestFn();
+            console.log("makeFishbowlRequest error:", error.message);
+            try {
+                await this.logOut();
+            }
+            catch { }
+            throw error;
         }
     }
     async loadOrCreateToken() {
@@ -144,37 +152,30 @@ class FishbowlService {
             return null;
         }
     }
-    // async getInventory() {
-    //   const token = await this.getToken();
-    //   if (!token) {
-    //     throw new Error("Failed to authenticate with Fishbowl");
-    //   }
-    //   try {
-    //     const response = await axios.get(
-    //       `${config.fishbowl.baseUrl}/parts/inventory`,
-    //       {
-    //         headers: {
-    //           "Content-Type": "application/json",
-    //           Authorization: `Bearer ${token}`,
-    //         },
-    //         timeout: 10000,
-    //       }
-    //     );
-    //     return response.data;
-    //   } catch (error: any) {
-    //     console.error(
-    //       "Error fetching inventory:",
-    //       error.response?.data || error.message
-    //     );
-    //     throw error;
-    //   }
-    // }
-    async seeTable(partNumber) {
-        return await this.makeAuthenticatedRequest(async () => {
+    async logOut() {
+        try {
             const token = await this.getToken();
             if (!token) {
                 throw new Error("Failed to authenticate with Fishbowl");
             }
+            const response = await axios_1.default.post(`${environment_1.config.fishbowl.baseUrl}/logout`, null, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                timeout: 10000,
+            });
+            this.token = null;
+            this.tokenPromise = null;
+            this.deleteTokenFile();
+            return response;
+        }
+        catch (error) {
+            console.log(`Error logging out: ${error.message} `);
+            throw error;
+        }
+    }
+    async seeTable(partNumber) {
+        return await this.makeFishbowlRequest(async (token) => {
             const response = await axios_1.default.get(`${environment_1.config.fishbowl.baseUrl}/data-query`, {
                 headers: {
                     "Content-Type": "application/json",
@@ -201,11 +202,7 @@ class FishbowlService {
         });
     }
     async getAllActivePartNums() {
-        return await this.makeAuthenticatedRequest(async () => {
-            const token = await this.getToken();
-            if (!token) {
-                throw new Error("Failed to authenticate with Fishbowl");
-            }
+        return await this.makeFishbowlRequest(async (token) => {
             const response = await axios_1.default.get(`${environment_1.config.fishbowl.baseUrl}/data-query`, {
                 headers: {
                     "Content-Type": "application/json",
@@ -225,27 +222,20 @@ class FishbowlService {
             return stringlist;
         });
     }
-    async logOut() {
-        try {
-            const token = await this.getToken();
-            if (!token) {
-                throw new Error("Failed to authenticate with Fishbowl");
-            }
-            const response = await axios_1.default.post(`${environment_1.config.fishbowl.baseUrl}/logout`, null, {
+    async getAllPartNumsWithDescription() {
+        return await this.makeFishbowlRequest(async (token) => {
+            const response = await axios_1.default.get(`${environment_1.config.fishbowl.baseUrl}/data-query`, {
                 headers: {
+                    "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
                 timeout: 10000,
+                params: {
+                    query: `SELECT part.num as "Part Num", part.description as 'Description' FROM part`,
+                },
             });
-            this.token = null;
-            this.tokenPromise = null;
-            this.deleteTokenFile();
-            return response;
-        }
-        catch (error) {
-            console.log(`Error logging out: ${error.message} `);
-            throw error;
-        }
+            return response.data;
+        });
     }
 }
 exports.FishbowlService = FishbowlService;

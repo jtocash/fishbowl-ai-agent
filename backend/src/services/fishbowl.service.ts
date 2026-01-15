@@ -44,13 +44,29 @@ export class FishbowlService {
     requestFn: () => Promise<T>
   ): Promise<T> {
     try {
-      return await requestFn();
-    } catch (error: any) {
-      console.log("make auth request 1");
+      // Login every time
       this.token = null;
       this.tokenPromise = null;
-      await this.getToken();
-      return await requestFn();
+      const token = await this.login();
+      if (token) {
+        this.token = token;
+      }
+      
+      const result = await requestFn();
+      
+      // Logout when finished
+      await this.logOut();
+      
+      return result;
+    } catch (error: any) {
+      console.log("Error in authenticated request:", error.message);
+      // Attempt logout even on error
+      try {
+        await this.logOut();
+      } catch (logoutError: any) {
+        console.log("Logout failed after error:", logoutError.message);
+      }
+      throw error;
     }
   }
 

@@ -6,8 +6,8 @@ import fishbowlRoutes from "./routes/fishbowl.routes";
 import aiAgentRoutes from "./routes/aiagent.routes";
 import msGraphRoutes from "./routes/msgraph.routes";
 import { msGraphService } from "./services/msgraph.service";
-import { fishbowlService } from "./services/fishbowl.service";
 import { vectorStoreService } from "./services/vectorstore.service";
+import { fishbowlService } from "./services/fishbowl.service";
 
 const app = express();
 
@@ -48,21 +48,25 @@ async function initializeWebhooks() {
   }
 }
 
-function manageFishbowlLogin() {
-  // Relogin every 30 minutes
-  setInterval(
-    async () => {
-      try {
-        console.log("Scheduled relogin, Relogging into fishbowl");
-        await fishbowlService.logOut();
-        await fishbowlService.login();
-      } catch (error: any) {
-        console.error("Scheduled relogin failed:", error.message);
-      }
-    },
-    30 * 60 * 1000
-  );
-}
+// function manageFishbowlLogin() {
+//   // Relogin every 30 minutes
+//   setInterval(
+//     async () => {
+//         console.log("Scheduled relogin, Relogging into fishbowl");
+//         try {
+//           await fishbowlService.logOut();
+//         } catch (error: any) {
+//           console.error("Failed to log out:", error.message);
+//         }
+//         try {
+//           await fishbowlService.login();
+//         } catch (error: any) {
+//           console.error("Failed to login:", error.message);
+//         }
+//     },
+//     30 * 60 * 1000
+//   );
+// }
 
 function manageVectorStore() {
   setInterval(
@@ -88,14 +92,7 @@ function manageVectorStore() {
 app.listen(config.port, async () => {
   console.log(`Server running on port ${config.port}`);
 
-  // Initialize webhooks after server starts
-  await fishbowlService.getToken();
   await initializeWebhooks();
-  try {
-    await vectorStoreService.updateVectorStore();
-  } catch (error: any) {
-    console.error("Scheduled vector store update failed:", error.message);
-  }
-  manageFishbowlLogin();
   manageVectorStore();
+  // manageFishbowlLogin();
 });

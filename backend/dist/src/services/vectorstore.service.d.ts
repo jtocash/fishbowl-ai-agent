@@ -1,6 +1,14 @@
-declare class VectorStoreService {
+import { ListFilesResponse } from "../types/vectorstore.types";
+import { OpenAIClientService } from "./openaiclient.service";
+declare class VectorStoreService extends OpenAIClientService {
     private vectorStoreId;
-    private openAiApiKey;
+    addFile(fileId: string): Promise<any>;
+    listFiles(): Promise<ListFilesResponse>;
+    deleteFileFromVectorStore(fileId: string): Promise<any>;
+    updateVectorStore(): Promise<{
+        success: boolean;
+        fileId: string;
+    }>;
 }
 export declare const vectorStoreService: VectorStoreService;
 export {};
