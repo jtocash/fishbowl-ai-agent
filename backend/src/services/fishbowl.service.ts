@@ -220,18 +220,19 @@ export class FishbowlService {
           },
           timeout: 10000,
           params: {
-            query: `SELECT 
-      part.num AS "Part Number",
-      trackingtext.info AS "Condition",
-      tag.qty AS "Qty"
-  FROM tag
-  LEFT JOIN part 
-      ON tag.partid = part.id
-  LEFT JOIN trackingtext 
-      ON tag.id = trackingtext.tagid
-  INNER JOIN product
-      ON part.num = product.sku AND product.activeflag = true
-  WHERE tag.typeid = 30 and trackingtext.info not like 'TX%' and trackingtext.info like 'RWI11' and part.num = '${partNumber}';
+            query: `SELECT
+    p.partid,
+    p.num,
+    p.sku,
+    SUM(q.qtyonhand) - SUM(q.qtyallocatedso) AS AVAILABLE
+FROM product p
+INNER JOIN qtyinventory q
+    ON p.partid = q.partid
+WHERE q.locationgroupid != 1 and p.sku = '${partNumber}'
+GROUP BY
+    p.partid,
+    p.num;
+
   `,
           },
         }
@@ -272,7 +273,7 @@ export class FishbowlService {
     });
   }
 
-  async getAllPartNumsWithDescription(): Promise<object[]> {
+  async getAllPartNumsWithDescription(): Promise<{ PartNum: string; Description: string; Details: string }[]> {
     return await this.makeAuthenticatedRequest(async () => {
       const token = await this.getToken();
 
@@ -289,11 +290,25 @@ export class FishbowlService {
           },
           timeout: 10000,
           params: {
-            query: `SELECT part.num as "Part Num", part.description as 'Description' FROM part`,
+            query: `SELECT part.num as "PartNum", part.description as 'Description', part.details as 'Details' FROM part`,
           },
         }
       );
-      return response.data;
+      
+      // // Save data locally
+      // const dataPath = path.join(__dirname, "../../data/parts.json");
+      // try {
+      //   await fs.writeFile(dataPath, JSON.stringify(response.data, null, 2), "utf-8");
+      //   console.log("Parts data saved to file");
+      // } catch (error) {
+      //   console.error("Failed to save parts data to file:", error);
+      // }
+      
+      return response.data.map((obj: any) => ({
+        PartNum: obj.PartNum,
+        Description: obj.Description,
+        Details: obj.Details,
+      }));
     });
   }
 }

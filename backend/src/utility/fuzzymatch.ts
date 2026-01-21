@@ -14,3 +14,15 @@ export async function fuzzyMatchInputToPartNum(input: string) {
   console.log(top5);
   return top5;
 }
+
+export async function fuzzyMatchInputToDescription(input: string) {
+  const inputnormalized = input.toUpperCase();
+  const entries = await fishbowlService.getAllPartNumsWithDescription();
+  let res: [number, { PartNum: string; Description: string; Details: string }][] = [];
+  for (const entry of entries) {
+    const score = fuzz.ratio(inputnormalized, entry.Description);
+    res.push([score, entry]);
+  }
+  res.sort((a, b) => b[0] - a[0]);
+  return res.slice(0, 5);
+}

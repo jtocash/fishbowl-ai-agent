@@ -16,9 +16,9 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use("/api", healthRoutes);
-app.use("/api/fishbowl", fishbowlRoutes);
-app.use("/api/agent", aiAgentRoutes);
+// app.use("/api", healthRoutes);
+// app.use("/api/fishbowl", fishbowlRoutes);
+// app.use("/api/agent", aiAgentRoutes);
 app.use("/api/msgraph", msGraphRoutes);
 
 // Initialize webhook subscriptions
@@ -94,5 +94,6 @@ app.listen(config.port, async () => {
 
   await initializeWebhooks();
   manageVectorStore();
+
   // manageFishbowlLogin();
 });

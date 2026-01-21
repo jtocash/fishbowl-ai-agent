@@ -82,7 +82,7 @@ class VectorStoreService extends OpenAIClientService {
       return { success: true, fileId: newfileid };
     } catch (error: any) {
       console.error(`Error updating vector store: ${error.message}`);
-      throw error;
+      return { success: false, error: error.message };
     }
   }
 }
