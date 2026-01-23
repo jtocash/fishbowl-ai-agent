@@ -1,27 +1,36 @@
 import { runWorkflow } from "../services/aiagent.service";
 import { msGraphService } from "../services/msgraph.service";
+import { config } from "../config/environment";
 
 export async function runEmailPipeline(messageId: string) {
   try {
     const messageobj = await msGraphService.getEmailConversation(messageId);
+    const botEmail = config.graph.userEmail;
 
-    // Get the actual latest message ID from the conversation
-    const latestMessage = messageobj[messageobj.length - 1];
+    // Filter out bot's own messages and get the latest user message
+    const userMessages = messageobj.filter(email => email.from !== botEmail);
+    const latestUserMessage = userMessages[userMessages.length - 1];
+
+    if (!latestUserMessage) {
+      console.log("No user messages found in conversation");
+      return;
+    }
 
     let agentinput = "";
-    let from;
     for (const email of messageobj) {
       agentinput += `From: ${email.from} \n \n`;
       agentinput += `Subject: ${email.subject} \n \n`;
       agentinput += `Body: ${email.body} \n \n`;
       agentinput += `................................ NEXT EMAIL IN CHAIN ................................ \n \n`;
-      from = email.from;
     }
 
     const agentResponse = await runWorkflow({ input_as_text: agentinput });
+    if (!agentResponse) {
+      throw new Error("Agent response is undefined");
+    }
 
-    // Use the latest message's actual ID instead of the webhook notification ID
-    msGraphService.replyToEmail(latestMessage.id, agentResponse.output_text);
+    // Reply to the latest user message (not the bot's own messages)
+    await msGraphService.replyToEmail(latestUserMessage.id, agentResponse.output_text);
   } catch (error: any) {
     console.log(`Error running the email pipeline: ${error.message}`);
   }
