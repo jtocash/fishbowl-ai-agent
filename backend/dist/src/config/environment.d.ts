@@ -12,6 +12,9 @@ export declare const config: {
         apiKey: string;
         vectorStoreId: string;
     };
+    ElevenLabs: {
+        apiKey: string;
+    };
     graph: {
         certificatePassword: string;
         userEmail: string;

@@ -8,6 +8,7 @@ declare class MsGraphService {
     getClient(): Promise<Client>;
     getMail(): Promise<any>;
     replyToEmail(messageId: string, replyText: string): Promise<void>;
+    sendEmail(recipientEmail: string, subject: string, body: string): Promise<void>;
     createSubscription(): Promise<any>;
     renewSubscriptions(): Promise<void>;
     clearSubscriptions(): Promise<{

@@ -72,7 +72,7 @@ class VectorStoreService extends openaiclient_service_1.OpenAIClientService {
         }
         catch (error) {
             console.error(`Error updating vector store: ${error.message}`);
-            throw error;
+            return { success: false, error: error.message };
         }
     }
 }

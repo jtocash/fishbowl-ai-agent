@@ -1,4 +1,4 @@
-import { runWorkflow } from "../services/aiagent.service";
+import { runWorkflow } from "../agent/main";
 import { msGraphService } from "../services/msgraph.service";
 import { config } from "../config/environment";
 

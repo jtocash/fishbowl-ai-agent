@@ -7,6 +7,7 @@ import aiAgentRoutes from "./routes/aiagent.routes";
 import msGraphRoutes from "./routes/msgraph.routes";
 import { msGraphService } from "./services/msgraph.service";
 import { vectorStoreService } from "./services/vectorstore.service";
+import utilityRoutes from './routes/utilities.routes'
 import { fishbowlService } from "./services/fishbowl.service";
 
 const app = express();
@@ -16,9 +17,10 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-// app.use("/api", healthRoutes);
-// app.use("/api/fishbowl", fishbowlRoutes);
-// app.use("/api/agent", aiAgentRoutes);
+app.use("/api", healthRoutes);
+app.use("/api/fishbowl", fishbowlRoutes);
+app.use("/api/utilities", utilityRoutes)
+app.use("/api/agent", aiAgentRoutes);
 app.use("/api/msgraph", msGraphRoutes);
 
 // Initialize webhook subscriptions

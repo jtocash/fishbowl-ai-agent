@@ -8,6 +8,7 @@ import {
   SecretsManagerClient,
   GetSecretValueCommand,
 } from "@aws-sdk/client-secrets-manager";
+import { ConnectContactLens } from "aws-sdk";
 
 const tenantId = config.graph.tenantId;
 const clientId = config.graph.clientId;
@@ -121,6 +122,36 @@ class MsGraphService {
       console.log("Replied to email:", messageId);
     } catch (err: any) {
       console.error("Error replying to email:", err.message);
+      throw err;
+    }
+  }
+
+  async sendEmail(recipientEmail: string, subject: string, body: string) {
+    try {
+      const message = {
+        message: {
+          subject: subject,
+          body: {
+            contentType: "Text",
+            content: body
+          },
+          toRecipients: [
+            {
+              emailAddress: {
+                address: recipientEmail
+              }
+            }
+          ]
+        }
+      };
+
+      await (await this.getClient())
+        .api(`/users/${userEmail}/sendMail`)
+        .post(message);
+
+      console.log("Email sent to:", recipientEmail);
+    } catch (err: any) {
+      console.error("Error sending email:", err.message);
       throw err;
     }
   }

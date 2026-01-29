@@ -23,6 +23,7 @@ const requiredEnvVars = [
     "WEBHOOK_CLIENT_STATE_SECRETPHRASE",
     "NODE_ENV",
     "VECTOR_STORE_ID",
+    "ELEVENLABS_API_KEY",
     ...(process.env.NODE_ENV !== "production" ? ["PEM_B64"] : []),
 ];
 const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
@@ -42,6 +43,9 @@ exports.config = {
     OpenAI: {
         apiKey: process.env.OPENAI_API_KEY,
         vectorStoreId: process.env.VECTOR_STORE_ID,
+    },
+    ElevenLabs: {
+        apiKey: process.env.ELEVENLABS_API_KEY
     },
     graph: {
         certificatePassword: process.env.GRAPH_CERTIFICATE_PASSWORD,

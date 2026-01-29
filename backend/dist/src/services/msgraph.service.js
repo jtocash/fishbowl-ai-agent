@@ -106,6 +106,34 @@ class MsGraphService {
             throw err;
         }
     }
+    async sendEmail(recipientEmail, subject, body) {
+        try {
+            const message = {
+                message: {
+                    subject: subject,
+                    body: {
+                        contentType: "Text",
+                        content: body
+                    },
+                    toRecipients: [
+                        {
+                            emailAddress: {
+                                address: recipientEmail
+                            }
+                        }
+                    ]
+                }
+            };
+            await (await this.getClient())
+                .api(`/users/${userEmail}/sendMail`)
+                .post(message);
+            console.log("Email sent to:", recipientEmail);
+        }
+        catch (err) {
+            console.error("Error sending email:", err.message);
+            throw err;
+        }
+    }
     async createSubscription() {
         const baseUrl = environment_1.config.webhooks.baseUrl;
         if (!baseUrl) {

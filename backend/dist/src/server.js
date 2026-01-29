@@ -12,6 +12,7 @@ const aiagent_routes_1 = __importDefault(require("./routes/aiagent.routes"));
 const msgraph_routes_1 = __importDefault(require("./routes/msgraph.routes"));
 const msgraph_service_1 = require("./services/msgraph.service");
 const vectorstore_service_1 = require("./services/vectorstore.service");
+const utilities_routes_1 = __importDefault(require("./routes/utilities.routes"));
 const app = (0, express_1.default)();
 // Middleware
 app.use((0, cors_1.default)());
@@ -19,6 +20,7 @@ app.use(express_1.default.json());
 // Routes
 app.use("/api", health_routes_1.default);
 app.use("/api/fishbowl", fishbowl_routes_1.default);
+app.use("/api/utilities", utilities_routes_1.default);
 app.use("/api/agent", aiagent_routes_1.default);
 app.use("/api/msgraph", msgraph_routes_1.default);
 // Initialize webhook subscriptions
@@ -85,12 +87,7 @@ function manageVectorStore() {
 app.listen(environment_1.config.port, async () => {
     console.log(`Server running on port ${environment_1.config.port}`);
     await initializeWebhooks();
-    try {
-        await vectorstore_service_1.vectorStoreService.updateVectorStore();
-    }
-    catch (error) {
-        console.error("Scheduled vector store update failed:", error.message);
-    }
     manageVectorStore();
+    // manageFishbowlLogin();
 });
 //# sourceMappingURL=server.js.map

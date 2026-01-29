@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const aiagent_service_1 = require("../services/aiagent.service");
+const main_1 = require("../agent/main");
 const router = (0, express_1.Router)();
 router.post("/input", async (req, res) => {
     const input = req.body.input;
     try {
-        const workflowres = await (0, aiagent_service_1.runWorkflow)({ input_as_text: input });
+        const workflowres = await (0, main_1.runWorkflow)({ input_as_text: input });
         res.json({ agentResponse: workflowres });
     }
     catch (error) {

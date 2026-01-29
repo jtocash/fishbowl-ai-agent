@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { runWorkflow } from "../services/aiagent.service";
+import { runWorkflow } from "../agent/main";
 
 const router = Router();
 

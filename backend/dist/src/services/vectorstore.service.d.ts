@@ -8,6 +8,11 @@ declare class VectorStoreService extends OpenAIClientService {
     updateVectorStore(): Promise<{
         success: boolean;
         fileId: string;
+        error?: undefined;
+    } | {
+        success: boolean;
+        error: any;
+        fileId?: undefined;
     }>;
 }
 export declare const vectorStoreService: VectorStoreService;
